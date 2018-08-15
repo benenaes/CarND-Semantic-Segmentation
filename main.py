@@ -65,7 +65,8 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
         kernel_size,
         padding = 'same',
         kernel_initializer = tf.random_normal_initializer(stddev=stddev_initialized_weights),
-        kernel_regularizer= tf.contrib.layers.l2_regularizer(scale_l2_regularization))
+        kernel_regularizer= tf.contrib.layers.l2_regularizer(scale_l2_regularization),
+        name="conv_of_layer7")
 
     # Deconvolutional layer : up sample x 2
     kernel_size = 4
@@ -76,7 +77,8 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
         strides=(2, 2),
         padding='same',
         kernel_initializer=tf.random_normal_initializer(stddev=stddev_initialized_weights),
-        kernel_regularizer=tf.contrib.layers.l2_regularizer(scale_l2_regularization))
+        kernel_regularizer=tf.contrib.layers.l2_regularizer(scale_l2_regularization),
+        name="deconv_layer1")
 
     # 1x1 convolutional layer after VGG layer 4 to downsize to num_classes
     kernel_size = 1
@@ -86,7 +88,8 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
         kernel_size,
         padding='same',
         kernel_initializer=tf.random_normal_initializer(stddev=stddev_initialized_weights),
-        kernel_regularizer=tf.contrib.layers.l2_regularizer(scale_l2_regularization))
+        kernel_regularizer=tf.contrib.layers.l2_regularizer(scale_l2_regularization),
+        name="conv_of_layer4")
 
     # Skip layer 1 : combining spatial info of VGG layers 4 and 7
     skip_layer1 = tf.add(deconv_layer1, conv_of_layer4)
@@ -100,7 +103,8 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
         strides=(2, 2),
         padding='same',
         kernel_initializer=tf.random_normal_initializer(stddev=stddev_initialized_weights),
-        kernel_regularizer=tf.contrib.layers.l2_regularizer(scale_l2_regularization))
+        kernel_regularizer=tf.contrib.layers.l2_regularizer(scale_l2_regularization),
+        name="deconv_layer2")
 
     # 1x1 convolutional layer after VGG layer 3 to downsize to num_classes
     kernel_size = 1
@@ -110,7 +114,8 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
         kernel_size,
         padding='same',
         kernel_initializer=tf.random_normal_initializer(stddev=stddev_initialized_weights),
-        kernel_regularizer=tf.contrib.layers.l2_regularizer(scale_l2_regularization))
+        kernel_regularizer=tf.contrib.layers.l2_regularizer(scale_l2_regularization),
+        name="conv_of_layer3")
 
     # Skip layer 1 : combining spatial info of VGG layers 3, 4 and 7
     skip_layer2 = tf.add(deconv_layer2, conv_of_layer3)
@@ -124,7 +129,8 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
         strides=(8, 8),
         padding='same',
         kernel_initializer=tf.random_normal_initializer(stddev=stddev_initialized_weights),
-        kernel_regularizer=tf.contrib.layers.l2_regularizer(scale_l2_regularization))
+        kernel_regularizer=tf.contrib.layers.l2_regularizer(scale_l2_regularization),
+        name="deconv_layer3")
 
     return deconv_layer3
 

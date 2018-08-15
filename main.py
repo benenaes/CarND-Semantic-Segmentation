@@ -207,8 +207,8 @@ tests.test_train_nn(train_nn)
 def run():
     num_classes = 2
     image_shape = (160, 576)
-    epochs = 10
-    batch_size = 1
+    epochs = 40
+    batch_size = 8
     data_dir = './data'
     runs_dir = './runs'
     tests.test_for_kitti_dataset(data_dir)

@@ -177,7 +177,7 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     :param keep_prob: TF Placeholder for dropout keep probability
     :param learning_rate: TF Placeholder for learning rate
     """
-    sess.run(tf.global_variables_initializer())
+    #sess.run(tf.global_variables_initializer())
 
     print('Starting training... for {} epochs'.format(epochs))
     print()
@@ -207,8 +207,8 @@ tests.test_train_nn(train_nn)
 def run():
     num_classes = 2
     image_shape = (160, 576)
-    epochs = 40
-    batch_size = 8
+    epochs = 10
+    batch_size = 1
     data_dir = './data'
     runs_dir = './runs'
     tests.test_for_kitti_dataset(data_dir)
@@ -220,7 +220,10 @@ def run():
     # You'll need a GPU with at least 10 teraFLOPS to train on.
     #  https://www.cityscapes-dataset.com/
 
-    with tf.Session() as sess:
+    config = tf.ConfigProto(allow_soft_placement=True)
+    config.gpu_options.allocator_type = 'BFC'
+    config.gpu_options.allow_growth = True
+    with tf.Session(config=config) as sess:
         # Path to vgg model
         vgg_path = os.path.join(data_dir, 'vgg')
         # Create function to get batches
@@ -237,6 +240,9 @@ def run():
         learning_rate = tf.placeholder(dtype=tf.float32)
 
         logits, train_op, cross_entropy_loss = optimize(output_layer, correct_label, learning_rate, num_classes)
+
+        saver = tf.train.Saver()
+        saver.restore(sess, './runs/oom.ckpt')
 
         # Train NN using the train_nn function
         train_nn(
@@ -256,6 +262,7 @@ def run():
 
         # OPTIONAL: Apply the trained model to a video
 
+        saver.save(sess, './runs/oom.ckpt')
 
 if __name__ == '__main__':
     run()

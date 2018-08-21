@@ -177,7 +177,6 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     :param keep_prob: TF Placeholder for dropout keep probability
     :param learning_rate: TF Placeholder for learning rate
     """
-    #sess.run(tf.global_variables_initializer())
 
     print('Starting training... for {} epochs'.format(epochs))
     print()
@@ -197,7 +196,6 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
             loss_log.append('{:3f}'.format(loss))
         print("epoch: {}, loss: {}".format(epoch + 1, loss))
 
-
 print('Training finished')
 
 
@@ -213,6 +211,10 @@ def run():
     runs_dir = './runs'
     tests.test_for_kitti_dataset(data_dir)
 
+    # Set initialize_variables to False to split up the training in cycles of 10 epochs
+    # This to avoid random OOM errors (sometimes occurs around epoch 15, sometimes 19, sometimes 25 etc.)
+    initialize_variables = True
+
     # Download pretrained vgg model
     helper.maybe_download_pretrained_vgg(data_dir)
 
@@ -226,6 +228,7 @@ def run():
     with tf.Session(config=config) as sess:
         # Path to vgg model
         vgg_path = os.path.join(data_dir, 'vgg')
+
         # Create function to get batches
         get_batches_fn = helper.gen_batch_function(os.path.join(data_dir, 'data_road/training'), image_shape)
 
@@ -242,7 +245,10 @@ def run():
         logits, train_op, cross_entropy_loss = optimize(output_layer, correct_label, learning_rate, num_classes)
 
         saver = tf.train.Saver()
-        saver.restore(sess, './runs/oom.ckpt')
+        if initialize_variables:
+            sess.run(tf.global_variables_initializer())
+        else:
+            saver.restore(sess, './runs/oom.ckpt')
 
         # Train NN using the train_nn function
         train_nn(
@@ -260,9 +266,8 @@ def run():
         # Save inference data using helper.save_inference_samples
         helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, vgg_input)
 
-        # OPTIONAL: Apply the trained model to a video
-
         saver.save(sess, './runs/oom.ckpt')
+        # OPTIONAL: Apply the trained model to a video
 
 if __name__ == '__main__':
     run()
